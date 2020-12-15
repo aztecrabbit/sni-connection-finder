@@ -1,2 +1,6 @@
-/sni-scanner
-/sni-scanner-*
+*.bak
+
+reconnect_data
+
+sni-scanner
+sni-scanner-*
