@@ -75,12 +75,7 @@ if [ "$?" != "1" ] ; then
 	exit 1
 fi
 
-is_root="$(su -c echo 2>/dev/null && echo 1)"
-
-if [ -z "$is_root" ] ; then
-	log $R1 "This phone is not rooted, please toggle airplane mode if needed!"
-	log
-fi
+is_root="$([ "$UID" = "0" ] && echo True)"
 
 while true ; do
 	for sni in "${@}" ; do
@@ -99,13 +94,20 @@ while true ; do
 
 		if [ "$result" = "True" ] ; then
 			log $Y1 "Connected"
-
-			echo
+			log
 
 			ifconfig 2>/dev/null | grep "inet 10." | awk '{ print $2 }' | {
+				i="0"
+
 				while read ip ; do
 					log $G1 "Current IP $ip"
+
+					i="$((i+1))"
 				done
+
+				if [ "$i" -ge "1" ] ; then
+					echo
+				fi
 			}
 
 			exit 0
@@ -114,21 +116,32 @@ while true ; do
 
 	echo
 
-	# On Off Airplane Mode
-	#
+	# Is Android
 
-	if [ "$is_root" ] ; then
-		su -c settings put global airplane_mode_on 1
-		su -c am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null
+	if [ ! -f "/etc/os-release" ] ; then
+		if [ "$is_root" ] ; then
+			su -c settings put global airplane_mode_on 1
+			su -c am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null
 
-		su -c settings put global airplane_mode_on 0
-		su -c am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null
+			su -c settings put global airplane_mode_on 0
+			su -c am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null
+
+		else
+			log $R1 "Enable Disable Airplane Mode Now!"
+			log
+
+			sleep 7.500
+
+		fi
 
 	else
-		log $R1 "Toggle Airplane Mode Now!"
-		log
+		reconnect_data="./reconnect_data"
 
-		sleep 7.500
+		if [ -f "$reconnect_data" ] ; then
+			chmod +x "$reconnect_data"
+
+			"$reconnect_data"
+		fi
 
 	fi
 
