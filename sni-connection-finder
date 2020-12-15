@@ -1,0 +1,89 @@
+#!/bin/bash
+
+if [ -z "$1" ] ; then
+	echo "Usage: $(basename ${0}) [SNI] [...SNI]"
+	exit 1
+fi
+
+clear
+
+G1="\033[32;1m"
+Y1="\033[33;1m"
+R1="\033[31;1m"
+CC="\033[0m"
+
+log () {
+	echo -e "${1}${*:2}${CC}"
+}
+
+log $G1 "Server Name Indication Connection Finder"
+log $G1 "(c) 2020 Aztec Rabbit."
+log
+
+sni_scanner="./sni-scanner"
+
+if [ ! -f "$sni_scanner" ] ; then
+	log $R1 "$sni_scanner not found!"
+	log
+	
+	exit 1
+fi
+
+is_root="$(su -c echo 2>/dev/null && echo 1)"
+
+if [ -z "$is_root" ] ; then
+	log $R1 "This phone is not rooted, please toggle airplane mode if needed!"
+	log
+fi
+
+while true ; do
+	for sni in "${@}" ; do
+		while true ; do
+			log $G1 "Connecting using $sni ..."
+
+			result="$("$sni_scanner" "$sni" 2>&1)"
+
+			if [ "$(echo $result | grep "network is unreachable")" ] ; then
+				sleep 2.500
+				continue
+			fi
+
+			break
+		done
+
+		if [ "$result" = "True" ] ; then
+			log $Y1 "Connected"
+			
+			echo
+				
+			ifconfig 2>/dev/null | grep "inet 10." | awk '{ print $2 }' | {
+				while read ip ; do
+					log $G1 "Current IP $ip"
+				done
+			}
+
+			exit 0
+		fi
+	done
+
+	echo
+
+	# On Off Airplane Mode
+	#
+
+	if [ "$is_root" ] ; then
+		su -c settings put global airplane_mode_on 1
+		su -c am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null
+
+		su -c settings put global airplane_mode_on 0
+		su -c am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null
+	
+	else
+		log $R1 "Toggle Airplane Mode Now!"
+		log
+		
+		sleep 5.000
+
+	fi
+
+done
