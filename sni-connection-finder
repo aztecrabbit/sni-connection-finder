@@ -23,7 +23,53 @@ log
 sni_scanner="./sni-scanner"
 
 if [ ! -f "$sni_scanner" ] ; then
-	log $R1 "$sni_scanner not found!"
+
+	arch="$(uname -m)"
+
+	case "$arch" in
+		"x86_64" )
+			sni_scanner_arch="linux-amd64"
+			;;
+
+		"aarch64" )
+			sni_scanner_arch="linux-arm64"
+			;;
+
+		"armv7l" )
+			sni_scanner_arch="linux-arm"
+			;;
+
+		* )
+			log $R1 "Architecture \"$arch\" not found!"
+			log
+			exit 1
+			;;
+	esac
+
+	curl="$(command -v curl)"
+
+	if [ -z "$curl" ] ; then
+		log $R1 "Please install curl first!"
+		log
+
+		exit 1
+	fi
+
+	log $G1 "Downloading sni-scanner using curl ..."
+
+	$curl -o sni-scanner "https://raw.githubusercontent.com/aztecrabbit/sni-connection-finder/sni-scanner-bin/sni-scanner-${sni_scanner_arch}" 2>/dev/null
+
+	log $G1 "Downloaded"
+	log
+
+	chmod +x sni-scanner 2>/dev/null
+
+fi
+
+./sni-scanner 2>/dev/null
+
+if [ "$?" != "1" ] ; then
+	log $R1 "Executing sni-scanner error!"
 	log
 
 	exit 1
@@ -82,7 +128,7 @@ while true ; do
 		log $R1 "Toggle Airplane Mode Now!"
 		log
 
-		sleep 5.000
+		sleep 7.500
 
 	fi
 
