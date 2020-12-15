@@ -25,7 +25,7 @@ sni_scanner="./sni-scanner"
 if [ ! -f "$sni_scanner" ] ; then
 	log $R1 "$sni_scanner not found!"
 	log
-	
+
 	exit 1
 fi
 
@@ -53,9 +53,9 @@ while true ; do
 
 		if [ "$result" = "True" ] ; then
 			log $Y1 "Connected"
-			
+
 			echo
-				
+
 			ifconfig 2>/dev/null | grep "inet 10." | awk '{ print $2 }' | {
 				while read ip ; do
 					log $G1 "Current IP $ip"
@@ -77,11 +77,11 @@ while true ; do
 
 		su -c settings put global airplane_mode_on 0
 		su -c am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null
-	
+
 	else
 		log $R1 "Toggle Airplane Mode Now!"
 		log
-		
+
 		sleep 5.000
 
 	fi
