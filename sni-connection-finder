@@ -31,7 +31,7 @@ if [ ! -f "$sni_scanner" ] ; then
 			sni_scanner_arch="linux-amd64"
 			;;
 
-		"aarch64" )
+		"armv8l" | "aarch64" )
 			sni_scanner_arch="linux-arm64"
 			;;
 
@@ -75,7 +75,7 @@ if [ "$?" != "1" ] ; then
 	exit 1
 fi
 
-is_root="$([ "$UID" = "0" ] && echo True)"
+is_android="$([ ! -f "/etc/os-release" ] && echo True)"
 
 while true ; do
 	for sni in "${@}" ; do
@@ -116,10 +116,9 @@ while true ; do
 
 	echo
 
-	# Is Android
+	if [ "$is_android" ] ; then
+		if su -c echo >/dev/null 2>&1 ; then
 
-	if [ ! -f "/etc/os-release" ] ; then
-		if [ "$is_root" ] ; then
 			su -c settings put global airplane_mode_on 1
 			su -c am broadcast -a android.intent.action.AIRPLANE_MODE >/dev/null
 
