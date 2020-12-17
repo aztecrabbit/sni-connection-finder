@@ -136,15 +136,14 @@ while true ; do
 
 		fi
 
-	else
-		reconnect_data="./reconnect_data"
+	fi
 
-		if [ -f "$reconnect_data" ] ; then
-			chmod +x "$reconnect_data"
+	reconnect_data="${dir}/reconnect_data"
 
-			"$reconnect_data"
-		fi
+	if [ -f "$reconnect_data" ] ; then
+		chmod +x "$reconnect_data"
 
+		"$reconnect_data"
 	fi
 
 done
