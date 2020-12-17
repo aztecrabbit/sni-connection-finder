@@ -47,23 +47,33 @@ if [ ! -f "$sni_scanner" ] ; then
 			;;
 	esac
 
-	curl="$(command -v curl)"
+	wget="$(command -v wget)"
 
-	if [ -z "$curl" ] ; then
-		log $R1 "Please install curl first!"
+	if [ -z "$wget" ] ; then
+		log $R1 "Please install wget first!"
 		log
 
 		exit 1
 	fi
 
-	log $G1 "Downloading sni-scanner using curl ..."
+	log $G1 "Downloading sni-scanner using wget ..."
 	log
 
-	$curl -o "$sni_scanner" "https://raw.githubusercontent.com/aztecrabbit/sni-connection-finder/sni-scanner-bin/sni-scanner-${sni_scanner_arch}"
+	$wget -O "$sni_scanner" "https://raw.githubusercontent.com/aztecrabbit/sni-connection-finder/sni-scanner-bin/sni-scanner-${sni_scanner_arch}"
 
-	log
-	log $G1 "Downloaded"
-	log
+	if [ "$?" != "0" ] ; then
+		log $R1 "Not downloaded!"
+		log
+
+		rm -f "$sni_scanner"
+
+		exit 1
+
+	else
+		log $G1 "Downloaded"
+		log
+
+	fi
 
 fi
 
